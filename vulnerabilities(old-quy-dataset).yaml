@@ -1,0 +1,160 @@
+- ID: XSS-01
+  Triệu chứng: Output phản hồi input không escape (comment) / Reflected XSS in comments
+  Category: A01:2023 – Injection (XSS)
+  Payload: <script>alert(1)</script>
+  Steps: Submit comment → xem source / response
+  Expected: Script xuất hiện và có thể trigger alert trong DOM
+  Severity: High
+  Remediation: Escape output server-side; Content-Security-Policy; input validation
+    / Escape output, CSP
+  Test type: Manual/Automated
+  Notes: Non-persistent in Juice Shop.
+- ID: SQLI-01
+  Triệu chứng: Form login trả lỗi khi thử ' OR '1'='1 / Authentication bypass / SQL
+    error
+  Category: A03:2023 – Injection (SQLi)
+  Payload: ''' OR ''1''=''1 (benign)'
+  Steps: Submit as password field → observe response / bypass
+  Expected: Bypass login or SQL error visible
+  Severity: Critical
+  Remediation: Use prepared statements / parameterized queries / ORM
+  Test type: Manual/Automated
+  Notes: Use read-only tests; avoid destructive payloads.
+- ID: LFI-01
+  Triệu chứng: Tham số file có thể truy cập đường dẫn tương đối ../../.. / Local File
+    Inclusion
+  Category: A06:2023 – Vulnerable and Outdated Components / Broken Access? (contextual)
+  Payload: ../../../../etc/passwd (lab only)
+  Steps: Truy cập URL with file param → check response body
+  Expected: Nội dung file (hoặc phần) xuất hiện trong response
+  Severity: High
+  Remediation: Whitelist paths, canonicalize, deny .. / path traversal protection
+  Test type: Manual
+  Notes: Lab-only; không dùng trên prod.
+- ID: CSRF-01
+  Triệu chứng: Form thay đổi state không có CSRF token / CSRF on state-changing form
+  Category: A05:2023 – Security Misconfiguration / CSRF (app-specific)
+  Payload: Craft HTML form auto-submit to target action
+  Steps: Visit attacker page → form auto-submits → observe state change
+  Expected: State changed without user token validation
+  Severity: Medium-High
+  Remediation: CSRF tokens, SameSite cookies, require authentication confirmation
+  Test type: Manual
+  Notes: Use non-destructive state change.
+- ID: AUTH-01
+  Triệu chứng: Session ID predictable / Broken authentication (session)
+  Category: A02:2023 – Cryptographic Failures / Broken Auth
+  Payload: N/A (observe session cookie pattern)
+  Steps: Register multiple sessions → compare session IDs
+  Expected: IDs predictable or low entropy
+  Severity: High
+  Remediation: Use secure random session IDs, HttpOnly, Secure, SameSite
+  Test type: Manual/Automated
+  Notes: Check cookie flags.
+- ID: SDE-01
+  Triệu chứng: Sensitive data (credit card) stored/transmitted plaintext / Sensitive
+    Data Exposure
+  Category: A03:2023 – Cryptographic Failures
+  Payload: Submit test card → observe storage/transport
+  Steps: Submit payment info in lab → inspect DB/traffic (HTTPS required)
+  Expected: Data stored/transmitted plaintext
+  Severity: Critical
+  Remediation: Encrypt at rest, TLS, avoid logging PII
+  Test type: Manual/Automated
+  Notes: Do not use real PII.
+- ID: IDOR-01
+  Triệu chứng: Tham số id có thể truy xuất dữ liệu người khác / Insecure Direct Object
+    Reference
+  Category: A01-A04 (Authorization issues)
+  Payload: change id=123 → id=124 in URL
+  Steps: Visit own resource URL → change id → access other's resource
+  Expected: Access to unauthorized resource returned
+  Severity: High
+  Remediation: Enforce authorization checks server-side, use indirect references
+  Test type: Manual
+  Notes: Good for demo.
+- ID: SSRF-01
+  Triệu chứng: URL fetch parameter cho phép request nội bộ / Server-Side Request Forgery
+  Category: A07:2023 – Identification and Authentication Failures? (contextual)
+  Payload: http://127.0.0.1:8080/ in url param
+  Steps: Provide URL param → observe server fetching internal resource
+  Expected: Server returns internal resource or times out indicating fetch
+  Severity: High
+  Remediation: Validate/whitelist target hosts; block internal ranges
+  Test type: Manual/Automated
+  Notes: Lab-only; avoid targeting real infra.
+- ID: MISCONFIG-01
+  Triệu chứng: Directory listing bật / Security misconfiguration (directory index)
+  Category: A05:2023 – Security Misconfiguration
+  Payload: Request directory path /uploads/
+  Steps: curl directory → observe listing
+  Expected: File list returned
+  Severity: Medium
+  Remediation: Disable directory listing; proper access controls
+  Test type: Automated/Manual
+  Notes: Easy detection.
+- ID: DESER-01
+  Triệu chứng: Insecure deserialization → controllable object leads to behavior change
+    / Insecure Deserialization
+  Category: A08:2023 – Software and Data Integrity Failures
+  Payload: serialized tampered payload (lab)
+  Steps: Submit serialized object → observe unexpected behavior
+  Expected: App executes unintended action or throws specific error
+  Severity: Critical (depending)
+  Remediation: Avoid native deserialization; use safe formats and integrity checks
+    (signing)
+  Test type: Manual
+  Notes: Complex—use safe lab setups.
+- ID: XXE-01
+  Triệu chứng: XML upload parses external entity → file disclosure / XML External
+    Entity
+  Category: A01/A08 (depends)
+  Payload: <!ENTITY xxe SYSTEM "file:///etc/passwd"> in XML (lab only)
+  Steps: Upload crafted XML → check response for entity expansion
+  Expected: External file content appears
+  Severity: High
+  Remediation: Disable external entities, use secure XML parsers
+  Test type: Manual
+  Notes: Lab-only.
+- ID: RATE-01
+  Triệu chứng: No rate limiting on auth endpoints → brute-force possible / Rate limit
+    missing
+  Category: A09:2023 – Security Logging and Monitoring Failures? (auth)
+  Payload: automated repeated login attempts (benign)
+  Steps: send many auth attempts → observe response codes
+  Expected: No throttling; same responses repeatedly
+  Severity: Medium-High
+  Remediation: Implement throttling, lockouts, monitoring, CAPTCHA
+  Test type: Automated
+  Notes: Non-destructive.
+- ID: API-01
+  Triệu chứng: API returns excessive user data in response / Excessive data exposure
+  Category: A04:2023 – Insecure Design / Data Exposure
+  Payload: GET /api/user/123
+  Steps: call API with auth → inspect response fields
+  Expected: Sensitive fields (SSN, internal flags) included
+  Severity: High
+  Remediation: Apply least privilege, filter fields server-side
+  Test type: Automated/Manual
+  Notes: Use API schema checks.
+- ID: CSP-01
+  Triệu chứng: Missing Content-Security-Policy on pages with inline scripts / Missing
+    CSP
+  Category: A05:2023 – Security Misconfiguration
+  Payload: N/A (inspect headers)
+  Steps: curl -I page → check CSP header presence
+  Expected: No CSP or overly permissive CSP
+  Severity: Medium
+  Remediation: Add restrictive CSP, avoid unsafe-inline
+  Test type: Automated
+  Notes: Quick fixable.
+- ID: LOG-01
+  Triệu chứng: Application logs contain secrets (API keys/passwords) / Sensitive logging
+  Category: A03/A09:2023 – Cryptographic/Logging issues
+  Payload: Submit input containing SECRET_TEST=12345 → check logs
+  Steps: trigger action that logs input → inspect log store (lab)
+  Expected: Secret present in logs
+  Severity: Medium-High
+  Remediation: Sanitize logs, mask secrets, avoid logging PII/credentials
+  Test type: Manual/Automated
+  Notes: Important for audit.

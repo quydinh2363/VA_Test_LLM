@@ -1,0 +1,297 @@
+[
+  {
+    "id": "XSS-01",
+    "title": "Output phản hồi input không escape (comment) / Reflected XSS in comments",
+    "category": "A01:2023 – Injection (XSS)",
+    "payloads": [
+      "<script>alert(1)</script>"
+    ],
+    "steps": [
+      "Submit comment ",
+      " xem source / response"
+    ],
+    "expected": "Script xuất hiện và có thể trigger alert trong DOM",
+    "severity": "High",
+    "remediation": "Escape output server-side; Content-Security-Policy; input validation / Escape output, CSP",
+    "test_type": [
+      "Manual",
+      "Automated"
+    ],
+    "notes": "Non-persistent in Juice Shop."
+  },
+  {
+    "id": "SQLI-01",
+    "title": "Form login trả lỗi khi thử ' OR '1'='1 / Authentication bypass / SQL error",
+    "category": "A03:2023 – Injection (SQLi)",
+    "payloads": [
+      "' OR '1'='1 (benign)"
+    ],
+    "steps": [
+      "Submit as password field ",
+      " observe response / bypass"
+    ],
+    "expected": "Bypass login or SQL error visible",
+    "severity": "Critical",
+    "remediation": "Use prepared statements / parameterized queries / ORM",
+    "test_type": [
+      "Manual",
+      "Automated"
+    ],
+    "notes": "Use read-only tests; avoid destructive payloads."
+  },
+  {
+    "id": "LFI-01",
+    "title": "Tham số file có thể truy cập đường dẫn tương đối ../../.. / Local File Inclusion",
+    "category": "A06:2023 – Vulnerable and Outdated Components / Broken Access? (contextual)",
+    "payloads": [
+      "../../../../etc/passwd (lab only)"
+    ],
+    "steps": [
+      "Truy cập URL with file param ",
+      " check response body"
+    ],
+    "expected": "Nội dung file (hoặc phần) xuất hiện trong response",
+    "severity": "High",
+    "remediation": "Whitelist paths, canonicalize, deny .. / path traversal protection",
+    "test_type": [
+      "Manual"
+    ],
+    "notes": "Lab-only; không dùng trên prod."
+  },
+  {
+    "id": "CSRF-01",
+    "title": "Form thay đổi state không có CSRF token / CSRF on state-changing form",
+    "category": "A05:2023 – Security Misconfiguration / CSRF (app-specific)",
+    "payloads": [
+      "Craft HTML form auto-submit to target action"
+    ],
+    "steps": [
+      "Visit attacker page ",
+      " form auto-submits ",
+      " observe state change"
+    ],
+    "expected": "State changed without user token validation",
+    "severity": "Medium-High",
+    "remediation": "CSRF tokens, SameSite cookies, require authentication confirmation",
+    "test_type": [
+      "Manual"
+    ],
+    "notes": "Use non-destructive state change."
+  },
+  {
+    "id": "AUTH-01",
+    "title": "Session ID predictable / Broken authentication (session)",
+    "category": "A02:2023 – Cryptographic Failures / Broken Auth",
+    "payloads": [
+      "N/A (observe session cookie pattern)"
+    ],
+    "steps": [
+      "Register multiple sessions ",
+      " compare session IDs"
+    ],
+    "expected": "IDs predictable or low entropy",
+    "severity": "High",
+    "remediation": "Use secure random session IDs, HttpOnly, Secure, SameSite",
+    "test_type": [
+      "Manual",
+      "Automated"
+    ],
+    "notes": "Check cookie flags."
+  },
+  {
+    "id": "SDE-01",
+    "title": "Sensitive data (credit card) stored/transmitted plaintext / Sensitive Data Exposure",
+    "category": "A03:2023 – Cryptographic Failures",
+    "payloads": [
+      "Submit test card → observe storage/transport"
+    ],
+    "steps": [
+      "Submit payment info in lab ",
+      " inspect DB/traffic (HTTPS required)"
+    ],
+    "expected": "Data stored/transmitted plaintext",
+    "severity": "Critical",
+    "remediation": "Encrypt at rest, TLS, avoid logging PII",
+    "test_type": [
+      "Manual",
+      "Automated"
+    ],
+    "notes": "Do not use real PII."
+  },
+  {
+    "id": "IDOR-01",
+    "title": "Tham số id có thể truy xuất dữ liệu người khác / Insecure Direct Object Reference",
+    "category": "A01-A04 (Authorization issues)",
+    "payloads": [
+      "change id=123 → id=124 in URL"
+    ],
+    "steps": [
+      "Visit own resource URL ",
+      " change id ",
+      " access other's resource"
+    ],
+    "expected": "Access to unauthorized resource returned",
+    "severity": "High",
+    "remediation": "Enforce authorization checks server-side, use indirect references",
+    "test_type": [
+      "Manual"
+    ],
+    "notes": "Good for demo."
+  },
+  {
+    "id": "SSRF-01",
+    "title": "URL fetch parameter cho phép request nội bộ / Server-Side Request Forgery",
+    "category": "A07:2023 – Identification and Authentication Failures? (contextual)",
+    "payloads": [
+      "http://127.0.0.1:8080/ in url param"
+    ],
+    "steps": [
+      "Provide URL param ",
+      " observe server fetching internal resource"
+    ],
+    "expected": "Server returns internal resource or times out indicating fetch",
+    "severity": "High",
+    "remediation": "Validate/whitelist target hosts; block internal ranges",
+    "test_type": [
+      "Manual",
+      "Automated"
+    ],
+    "notes": "Lab-only; avoid targeting real infra."
+  },
+  {
+    "id": "MISCONFIG-01",
+    "title": "Directory listing bật / Security misconfiguration (directory index)",
+    "category": "A05:2023 – Security Misconfiguration",
+    "payloads": [
+      "Request directory path /uploads/"
+    ],
+    "steps": [
+      "curl directory ",
+      " observe listing"
+    ],
+    "expected": "File list returned",
+    "severity": "Medium",
+    "remediation": "Disable directory listing; proper access controls",
+    "test_type": [
+      "Automated",
+      "Manual"
+    ],
+    "notes": "Easy detection."
+  },
+  {
+    "id": "DESER-01",
+    "title": "Insecure deserialization → controllable object leads to behavior change / Insecure Deserialization",
+    "category": "A08:2023 – Software and Data Integrity Failures",
+    "payloads": [
+      "serialized tampered payload (lab)"
+    ],
+    "steps": [
+      "Submit serialized object ",
+      " observe unexpected behavior"
+    ],
+    "expected": "App executes unintended action or throws specific error",
+    "severity": "Critical (depending)",
+    "remediation": "Avoid native deserialization; use safe formats and integrity checks (signing)",
+    "test_type": [
+      "Manual"
+    ],
+    "notes": "Complex—use safe lab setups."
+  },
+  {
+    "id": "XXE-01",
+    "title": "XML upload parses external entity → file disclosure / XML External Entity",
+    "category": "A01/A08 (depends)",
+    "payloads": [
+      "<!ENTITY xxe SYSTEM \"file:///etc/passwd\"> in XML (lab only)"
+    ],
+    "steps": [
+      "Upload crafted XML ",
+      " check response for entity expansion"
+    ],
+    "expected": "External file content appears",
+    "severity": "High",
+    "remediation": "Disable external entities, use secure XML parsers",
+    "test_type": [
+      "Manual"
+    ],
+    "notes": "Lab-only."
+  },
+  {
+    "id": "RATE-01",
+    "title": "No rate limiting on auth endpoints → brute-force possible / Rate limit missing",
+    "category": "A09:2023 – Security Logging and Monitoring Failures? (auth)",
+    "payloads": [
+      "automated repeated login attempts (benign)"
+    ],
+    "steps": [
+      "send many auth attempts ",
+      " observe response codes"
+    ],
+    "expected": "No throttling; same responses repeatedly",
+    "severity": "Medium-High",
+    "remediation": "Implement throttling, lockouts, monitoring, CAPTCHA",
+    "test_type": [
+      "Automated"
+    ],
+    "notes": "Non-destructive."
+  },
+  {
+    "id": "API-01",
+    "title": "API returns excessive user data in response / Excessive data exposure",
+    "category": "A04:2023 – Insecure Design / Data Exposure",
+    "payloads": [
+      "GET /api/user/123"
+    ],
+    "steps": [
+      "call API with auth ",
+      " inspect response fields"
+    ],
+    "expected": "Sensitive fields (SSN, internal flags) included",
+    "severity": "High",
+    "remediation": "Apply least privilege, filter fields server-side",
+    "test_type": [
+      "Automated",
+      "Manual"
+    ],
+    "notes": "Use API schema checks."
+  },
+  {
+    "id": "CSP-01",
+    "title": "Missing Content-Security-Policy on pages with inline scripts / Missing CSP",
+    "category": "A05:2023 – Security Misconfiguration",
+    "payloads": [
+      "N/A (inspect headers)"
+    ],
+    "steps": [
+      "curl -I page ",
+      " check CSP header presence"
+    ],
+    "expected": "No CSP or overly permissive CSP",
+    "severity": "Medium",
+    "remediation": "Add restrictive CSP, avoid unsafe-inline",
+    "test_type": [
+      "Automated"
+    ],
+    "notes": "Quick fixable."
+  },
+  {
+    "id": "LOG-01",
+    "title": "Application logs contain secrets (API keys/passwords) / Sensitive logging",
+    "category": "A03/A09:2023 – Cryptographic/Logging issues",
+    "payloads": [
+      "Submit input containing SECRET_TEST=12345 → check logs"
+    ],
+    "steps": [
+      "trigger action that logs input ",
+      " inspect log store (lab)"
+    ],
+    "expected": "Secret present in logs",
+    "severity": "Medium-High",
+    "remediation": "Sanitize logs, mask secrets, avoid logging PII/credentials",
+    "test_type": [
+      "Manual",
+      "Automated"
+    ],
+    "notes": "Important for audit."
+  }
+]
