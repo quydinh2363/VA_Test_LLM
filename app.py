@@ -1,10 +1,11 @@
-import json, os
+import json, os, time
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 from langchain.docstore.document import Document
 from langchain_groq import ChatGroq
 from langchain.chains import RetrievalQA
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain.memory import ConversationBufferMemory
 from dotenv import load_dotenv
 from langchain.chains import LLMChain
 import json
@@ -57,10 +58,17 @@ llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0)
 # ========== 5. Retrieval QA ==========
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
+memory = ConversationBufferMemory(
+    memory_key="chat_history",
+    output_key="result",
+    return_messages=True
+)
+
 qa = RetrievalQA.from_chain_type(
     llm=llm,
     retriever=retriever,
     chain_type="stuff",
+    memory = memory,
     chain_type_kwargs={"prompt": security_prompt_llm},
     return_source_documents=True
 )
@@ -70,6 +78,7 @@ qa = RetrievalQA.from_chain_type(
 def handle_userinput(user_question):
     intent_result = intent_chain.invoke({"question": user_question})
     raw_token = intent_result["token"].splitlines()[0].strip()
+    print(raw_token)
     response = st.session_state.conversation.invoke({"query": raw_token})
 
     st.session_state.chat_history.append({"role": "user", "content": user_question})
@@ -93,6 +102,12 @@ def main():
     user_question = st.text_input("Đặt câu hỏi hoặc yêu cầu của bạn về bảo mật web security:")
     if user_question:
         handle_userinput(user_question)
+    if st.button("please click me!"):
+        progress_bar = st.progress(0)
+        for percent in range(101):
+            time.sleep(0.05)
+            progress_bar.progress(percent)
+        st.balloons()
 
 if __name__ == "__main__":
     main()

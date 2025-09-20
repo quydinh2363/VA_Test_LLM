@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import time
 import json
+from dotenv import load_dotenv
 from datetime import datetime
 from zapv2 import ZAPv2
+
 
 # The URL of the application to be tested
 target = 'http://192.168.1.6:3000'
@@ -10,7 +12,8 @@ target = 'http://192.168.1.6:3000'
 apiKey = '2vvbrr3j30t0h1nfm24sgc1vnp'
 
 # By default ZAP API client will connect to port 8080
-
+# zap = ZAPv2(apikey=apiKey)
+# Use the line below if ZAP is not listening on port 8080, for example, if listening on port 8090
 zap = ZAPv2(apikey=apiKey, proxies={
   'http': 'http://192.168.1.5:8080',
   'https': 'http://192.168.1.5:8080'
