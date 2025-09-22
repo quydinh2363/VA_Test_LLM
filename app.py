@@ -15,29 +15,34 @@ from prompt_template_LLM import security_prompt_llm
 from intent_chain import intent_chain
 from db import *
 
-# --- 1. Load file JSON ---
-with open("symptoms.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
+
+with open("WEB_APPLICATION_PAYLOADS.jsonl", "r", encoding="utf-8") as f:
+    text = f.read()
+
+# Loại bỏ BOM hoặc ký tự vô hình (như U+00a0, U+feff)
+text = text.replace("\u00a0", "").replace("\ufeff", "")
+
+data = json.loads(text) 
 
 # --- 2. Chuyển từng entry thành Document ---
 docs = []
 for entry in data:
     content = f"""
-ID: {entry['id']}
-Title: {entry['title']}
-Category: {entry['category']}
-Payloads: {', '.join(entry['payloads'])}
-Steps: {' -> '.join(entry['steps'])}
-Expected: {entry['expected']}
-Severity: {entry['severity']}
-Remediation: {entry['remediation']}
-Test type: {', '.join(entry['test_type'])}
-Notes: {entry['notes']}
+ID: {entry.get('id', '')}
+Description: {entry.get('description', '')}
+Payload: {entry.get('payload', '')}
+Context: {entry.get('context', '')}
+Type: {entry.get('type', '')}
+Severity: {entry.get('severity', '')}
 """
     docs.append(
         Document(
             page_content=content,
-            metadata={"id": entry["id"], "severity": entry["severity"]}
+            metadata={
+                "id": entry.get("id", ""),
+                "severity": entry.get("severity", ""),
+                "type": entry.get("type", "")
+            }
         )
     )
 
@@ -138,8 +143,8 @@ def main():
         
         if prompt := st.chat_input("Đặt câu hỏi hoặc yêu cầu về bảo mật web security:"):
             intent_result = intent_chain.invoke({"question": prompt})
-            raw_token = intent_result["token"].splitlines()[0].strip()
-
+            raw_token = intent_result["token"].strip()
+            print("Câu trả lời của intent router: ", raw_token)
             response = st.session_state.conversation.invoke({"query": raw_token})
 
             save_message(conv_id, "user", prompt)
